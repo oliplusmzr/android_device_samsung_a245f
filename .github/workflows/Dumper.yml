@@ -1,40 +1,43 @@
 name: DUMP Transfer
 
 on:
-  workflow_dispatch: # Bu satır sayesinde butona basınca çalışır
+  workflow_dispatch:
 
 jobs:
   transfer:
     runs-on: ubuntu-latest
     steps:
-      - name: Alanı Hazırla
+      - name: 1. Diskte Yer Açma İşlemi
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          echo "Disk temizlendi, yer açıldı."
+
+      - name: 2. Alanı Hazırla
         uses: actions/checkout@v3
 
-      - name: Git Ayarlarını Yap
+      - name: 3. Git Ayarlarını Yap
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
 
-      - name: Kaynak Dosyayı Çek (Tadiphone)
+      - name: 4. Kaynak Dosyayı Çek
         run: |
-          # Önce kaynak repoyu 'gecici' klasörüne çekiyoruz
-          git clone https://dumps.tadiphone.dev/dumps/samsung/a24.git gecici_klasor
+          git clone --depth 1 https://dumps.tadiphone.dev/dumps/samsung/a24.git gecici_klasor
 
-      - name: Temizlik Yap (100MB Üstü ve Gereksizler)
+      - name: 5. 100MB Üstü Dosyaları Temizle
         run: |
           cd gecici_klasor
-          # Geçmişi sil (boyut küçülür)
           rm -rf .git
-          # 100 MB üstü dosyaları acımasızca sil (Yoksa GitHub kabul etmez!)
           find . -type f -size +100M -delete
-          # Dosyaları ana dizine taşı
           mv * ../
           cd ..
           rm -rf gecici_klasor
 
-      - name: GitHub'a Yükle
+      - name: 6. GitHub'a Yükle
         run: |
           git add .
-          git commit -m "GitHub Action ile otomatik transfer edildi"
+          git commit -m "Optimize transfer işlemi tamamlandı"
           git push origin main
-          
