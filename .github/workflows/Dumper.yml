@@ -1,0 +1,40 @@
+name: DUMP Transfer
+
+on:
+  workflow_dispatch: # Bu satır sayesinde butona basınca çalışır
+
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Alanı Hazırla
+        uses: actions/checkout@v3
+
+      - name: Git Ayarlarını Yap
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+
+      - name: Kaynak Dosyayı Çek (Tadiphone)
+        run: |
+          # Önce kaynak repoyu 'gecici' klasörüne çekiyoruz
+          git clone https://dumps.tadiphone.dev/dumps/samsung/a24.git gecici_klasor
+
+      - name: Temizlik Yap (100MB Üstü ve Gereksizler)
+        run: |
+          cd gecici_klasor
+          # Geçmişi sil (boyut küçülür)
+          rm -rf .git
+          # 100 MB üstü dosyaları acımasızca sil (Yoksa GitHub kabul etmez!)
+          find . -type f -size +100M -delete
+          # Dosyaları ana dizine taşı
+          mv * ../
+          cd ..
+          rm -rf gecici_klasor
+
+      - name: GitHub'a Yükle
+        run: |
+          git add .
+          git commit -m "GitHub Action ile otomatik transfer edildi"
+          git push origin main
+          
