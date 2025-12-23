@@ -31,7 +31,9 @@ jobs:
         run: |
           cd gecici_klasor
           rm -rf .git
-          find . -type f -size +100M -delete
+          find . -type f -size +90M -exec rm -f {} \;
+          echo "90MB üstü dosyalar silindi. Kalan en büyük 5 dosya:"
+          find . -type f -printf '%s %p\n' | sort -nr | head -5
           mv * ../
           cd ..
           rm -rf gecici_klasor
